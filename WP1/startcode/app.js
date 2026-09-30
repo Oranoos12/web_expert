@@ -70,7 +70,36 @@ app.get('/:route/:id', checkRoute, (req, res) => {
   res.json(record);
 });
 
+app.post('/:route', checkRoute, (req, res) => {
+  const route = req.params.route;
 
+  // als er nog geen lijst is voor deze route, maak een lege lijst
+  if (!config[route]) {
+    config[route] = [];
+  }
+  const data = config[route];
+
+  // body moet er zijn
+  if (!req.body) {
+    return res.status(400).json({ error: 'Body is verplicht' });
+  }
+
+  // zoek het hoogste id
+  let maxId = 0;
+  for (const item of data) {
+    if (item.id > maxId) {
+      maxId = item.id;
+    }
+  }
+
+  // maak het nieuwe record
+  const newRecord = req.body;
+  newRecord.id = maxId + 1;
+
+  data.push(newRecord);
+
+  res.status(201).json(newRecord);
+});
 
 const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
