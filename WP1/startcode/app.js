@@ -38,6 +38,35 @@ function checkRoute(req, res, next) {
   next();
 }
 
+function addEmbed(route, record, embedName) {
+  // welke relaties heeft deze route?
+  let relations = [];
+  if (config.relationships && config.relationships[route]) {
+    relations = config.relationships[route];
+  }
+
+  for (const relation of relations) {
+    // ownerIds -> owners
+    const name = relation.foreignKey.replace('Ids', '') + 's';
+
+    if (name === embedName) {
+      const relatedData = config[relation.relatedRoute] || [];
+      const ids = record[relation.foreignKey] || [];
+
+      // alle gerelateerde records waarvan het id in de lijst zit
+      const found = relatedData.filter(item => ids.includes(item.id));
+
+      // maak een kopie, zodat config zelf niet verandert
+      const copy = { ...record };
+      copy[embedName] = found;
+      return copy;
+    }
+  }
+
+  // geen passende relatie gevonden: record ongewijzigd terug
+  return record;
+}
+
 app.get('/', (req, res) => {
  const routes = config.routes.map(name => {  //config.routes is list name  van yaml , map maak name voor elke object
     const data = config[name] || [];
@@ -50,6 +79,12 @@ app.get('/', (req, res) => {
 app.get('/:route', checkRoute, (req, res) => {
   const route = req.params.route;
   const data = config[route] || [];
+  const embed = req.query.embed;
+
+  if(embed) {
+    const result = data.map(record => addEmbed(route, record, embed));
+    return res.json(result);
+  }
 
   res.json(data);
 });
@@ -65,6 +100,10 @@ app.get('/:route/:id', checkRoute, (req, res) => {
     return res.status(404).json({
       error: `Record with ID ${id} not found in ${route}`
     });
+  }
+
+  if(req.query.embed){
+    return res.json(addEmbed(route, record, req.query.embed));
   }
 
   res.json(record);
