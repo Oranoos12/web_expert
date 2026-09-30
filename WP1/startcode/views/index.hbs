@@ -1,0 +1,9 @@
+<h1>YAML JSON Server</h1>
+
+<ul>
+    {{#each routes}}  {{! loop over alle routes }}
+    <li>  {{!this.name is name van de routes , this.count is record }}
+        <a href="/{{this.name}}">/{{this.name}}</a> - {{this.count}} items
+    </li>
+    {{/each}}
+</ul>
