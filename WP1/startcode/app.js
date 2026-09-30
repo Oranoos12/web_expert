@@ -101,6 +101,58 @@ app.post('/:route', checkRoute, (req, res) => {
   res.status(201).json(newRecord);
 });
 
+app.delete('/:route/:id', checkRoute, (req, res) => {
+  const route = req.params.route;
+  const id = req.params.id;
+  const data = config[route] || [];
+
+  // zoek de positie van het record in de lijst
+  const index = data.findIndex(item => item.id == id);
+
+  // niet gevonden
+  if (index === -1) {
+    return res.status(404).json({
+      error: `Record with ID ${id} not found in ${route}`
+    });
+  }
+
+  // verwijder 1 element op die positie
+  const removed = data.splice(index, 1)[0];
+
+  res.json(removed);
+});
+
+
+app.put('/:route/:id', checkRoute, (req, res) => {
+  const route = req.params.route;
+  const id = req.params.id;
+  const data = config[route] || [];
+
+  // body moet er zijn
+  if (!req.body) {
+    return res.status(400).json({ error: 'Body is verplicht' });
+  }
+
+  // zoek de positie van het record
+  const index = data.findIndex(item => item.id == id);
+
+  // niet gevonden
+  if (index === -1) {
+    return res.status(404).json({
+      error: `Record with ID ${id} not found in ${route}`
+    });
+  }
+
+  // nieuw record = body, maar het id blijft hetzelfde
+  const updated = req.body;
+  updated.id = data[index].id;
+
+  data[index] = updated;
+
+  res.json(updated);
+});
+
+
 const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 }).on('error', (err) => {
