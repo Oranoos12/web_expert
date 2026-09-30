@@ -3,6 +3,7 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
 const hbs = require('hbs');
+const service = require('./service.js')
 
 const app = express();
 const PORT = 3000;
@@ -19,6 +20,7 @@ try {
   console.error('Error reading or parsing config:', error);
   process.exit(1);
 }
+service.setConfig(config);
 
 app.use(express.json());
 
@@ -38,125 +40,58 @@ function checkRoute(req, res, next) {
   next();
 }
 
-function addEmbed(route, record, embedName) {
-  // welke relaties heeft deze route?
-  let relations = [];
-  if (config.relationships && config.relationships[route]) {
-    relations = config.relationships[route];
-  }
-
-  for (const relation of relations) {
-    // ownerIds -> owners
-    const name = relation.foreignKey.replace('Ids', '') + 's';
-
-    if (name === embedName) {
-      const relatedData = config[relation.relatedRoute] || [];
-      const ids = record[relation.foreignKey] || [];
-
-      // alle gerelateerde records waarvan het id in de lijst zit
-      const found = relatedData.filter(item => ids.includes(item.id));
-
-      // maak een kopie, zodat config zelf niet verandert
-      const copy = { ...record };
-      copy[embedName] = found;
-      return copy;
-    }
-  }
-
-  // geen passende relatie gevonden: record ongewijzigd terug
-  return record;
-}
-
 app.get('/', (req, res) => {
  const routes = config.routes.map(name => {  //config.routes is list name  van yaml , map maak name voor elke object
-    const data = config[name] || [];
-    return { name: name, count: data.length };
+    return { name: name, count: service.getAll(name).length };
   });
 
   res.render('index', { routes: routes });
 });
 
 app.get('/:route', checkRoute, (req, res) => {
-  const route = req.params.route;
-  const data = config[route] || [];
-  const embed = req.query.embed;
-
-  if(embed) {
-    const result = data.map(record => addEmbed(route, record, embed));
-    return res.json(result);
-  }
-
-  res.json(data);
+ 
+  res.json(service.getAll(req.params.route, req.query.embed));
 });
 
 app.get('/:route/:id', checkRoute, (req, res) => {
   const route = req.params.route;
   const id = req.params.id;
-  const data = config[route] || [];
+ 
 
-  const record = data.find(item => item.id == id);
+  const record = service.getById(route, id, req.query.embed);
 
   if (!record) {
     return res.status(404).json({
-      error: `Record with ID ${id} not found in ${route}`
+      error: 'Record with ID ${id} not found in ${route}'
     });
-  }
-
-  if(req.query.embed){
-    return res.json(addEmbed(route, record, req.query.embed));
   }
 
   res.json(record);
 });
 
 app.post('/:route', checkRoute, (req, res) => {
+
+  if(!req.body){
+    return res.status(400).json({ error: 'Body is verplicht'})
+  }
   const route = req.params.route;
 
-  // als er nog geen lijst is voor deze route, maak een lege lijst
-  if (!config[route]) {
-    config[route] = [];
-  }
-  const data = config[route];
-
-  // body moet er zijn
-  if (!req.body) {
-    return res.status(400).json({ error: 'Body is verplicht' });
-  }
-
-  // zoek het hoogste id
-  let maxId = 0;
-  for (const item of data) {
-    if (item.id > maxId) {
-      maxId = item.id;
-    }
-  }
-
-  // maak het nieuwe record
-  const newRecord = req.body;
-  newRecord.id = maxId + 1;
-
-  data.push(newRecord);
-
+  const newRecord = service.create(req.params.route, req.body);
   res.status(201).json(newRecord);
+
 });
 
 app.delete('/:route/:id', checkRoute, (req, res) => {
   const route = req.params.route;
   const id = req.params.id;
-  const data = config[route] || [];
 
-  // zoek de positie van het record in de lijst
-  const index = data.findIndex(item => item.id == id);
+  const removed = service.remove(route, id);
 
-  // niet gevonden
-  if (index === -1) {
+  if (!removed) {
     return res.status(404).json({
-      error: `Record with ID ${id} not found in ${route}`
+      error: 'Record with ID ${id} not found in ${route}'
     });
   }
-
-  // verwijder 1 element op die positie
-  const removed = data.splice(index, 1)[0];
 
   res.json(removed);
 });
@@ -165,28 +100,18 @@ app.delete('/:route/:id', checkRoute, (req, res) => {
 app.put('/:route/:id', checkRoute, (req, res) => {
   const route = req.params.route;
   const id = req.params.id;
-  const data = config[route] || [];
 
-  // body moet er zijn
   if (!req.body) {
     return res.status(400).json({ error: 'Body is verplicht' });
   }
 
-  // zoek de positie van het record
-  const index = data.findIndex(item => item.id == id);
+  const updated = service.update(route, id, req.body);
 
-  // niet gevonden
-  if (index === -1) {
+  if (!updated) {
     return res.status(404).json({
-      error: `Record with ID ${id} not found in ${route}`
+      error: 'Record with ID ${id} not found in ${route}'
     });
   }
-
-  // nieuw record = body, maar het id blijft hetzelfde
-  const updated = req.body;
-  updated.id = data[index].id;
-
-  data[index] = updated;
 
   res.json(updated);
 });
