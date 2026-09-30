@@ -201,6 +201,14 @@ const server = app.listen(PORT, () => {
 
 const shutdown = () => {
   console.log('Shutting down...');
+    // schrijf de huidige toestand terug naar het yaml-bestand
+  try {
+    const text = yaml.dump(config);
+    fs.writeFileSync(path.join(__dirname, CONFIG), text, 'utf8');
+    console.log('Data opgeslagen in ' + CONFIG);
+  } catch (error) {
+    console.error('Opslaan mislukt:', error);
+  }
   server.close(() => process.exit(0));
 };
 
