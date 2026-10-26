@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
 
 app.get('/:route', checkRoute, (req, res) => {
  
-  res.json(service.getAll(req.params.route, req.query.embed));
+  res.json(service.getAll(req.params.route, req.query));
 });
 
 app.get('/:route/:id', checkRoute, (req, res) => {

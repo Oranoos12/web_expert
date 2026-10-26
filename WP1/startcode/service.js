@@ -1,5 +1,6 @@
 // service.js - alle logica rond de data (in het geheugen)
 let config = {};
+const { randomUUID } = require('crypto');
 
 // app.js geeft hier de config door na het inlezen
 function setConfig(newConfig) {
@@ -23,6 +24,7 @@ function addEmbed(route, record, embedName) {
       const found = relatedData.filter(item => ids.includes(item.id));
 
       const copy = { ...record };
+    
       copy[embedName] = found;
       return copy;
     }
@@ -31,11 +33,55 @@ function addEmbed(route, record, embedName) {
   return record;
 }
 
-function getAll(route, embed) {
-  const data = config[route] || [];
+function getAll(route, query = {}) {
+  let data = config[route] || [];
 
-  if (embed) {
-    return data.map(record => addEmbed(route, record, embed));
+  // filter: elke parameter die geen embed is en niet met _ begint
+  for (const key in query) {
+    if (key === 'embed' || key.startsWith('_')) {
+      continue;
+    }
+    data = data.filter(item => String(item[key]) === String(query[key]));
+  }
+
+  // sorteren: ?_sort=name of ?_sort=-name (aflopend)
+  if (query._sort) {
+    let field = query._sort;
+    let direction = 1;
+
+    if (field.startsWith('-')) {
+      direction = -1;
+      field = field.slice(1);
+    }
+
+    data = [...data].sort((a, b) => {
+      if (a[field] < b[field]) {
+        return -1 * direction;
+      }
+      if (a[field] > b[field]) {
+        return 1 * direction;
+      }
+      return 0;
+    });
+  }
+
+  // range: ?_start=0&_end=2 of ?_start=1&_limit=2
+  if (query._start || query._end || query._limit) {
+    const start = Number(query._start) || 0;
+    let end = data.length;
+
+    if (query._end) {
+      end = Number(query._end);
+    }
+    if (query._limit) {
+      end = start + Number(query._limit);
+    }
+
+    data = data.slice(start, end);
+  }
+
+  if (query.embed) {
+    return data.map(record => addEmbed(route, record, query.embed));
   }
   return data;
 }
@@ -60,15 +106,8 @@ function create(route, body) {
   }
   const data = config[route];
 
-  let maxId = 0;
-  for (const item of data) {
-    if (item.id > maxId) {
-      maxId = item.id;
-    }
-  }
-
   const newRecord = body;
-  newRecord.id = maxId + 1;
+  newRecord.id = randomUUID();
   data.push(newRecord);
 
   return newRecord;
