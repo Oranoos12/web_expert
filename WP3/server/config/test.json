@@ -1,3 +1,4 @@
 {
-  "port": 8998
+  "port": 8998,
+  "mongodb": "mongodb://admin:secret@localhost:27017/wp3_test?authSource=admin"
 }
