@@ -33,28 +33,32 @@ function addEmbed(route, record, embedName) {
   return record;
 }
 
+
 function getAll(route, query = {}) {
   let data = config[route] || [];
 
-  // filter: elke parameter die geen embed is en niet met _ begint
+
   for (const key in query) {
     if (key === 'embed' || key.startsWith('_')) {
       continue;
     }
+
     data = data.filter(item => String(item[key]) === String(query[key]));
   }
 
   // sorteren: ?_sort=name of ?_sort=-name (aflopend)
   if (query._sort) {
-    let field = query._sort;
+    let field = query._sort;  
     let direction = 1;
 
     if (field.startsWith('-')) {
       direction = -1;
       field = field.slice(1);
     }
-
-    data = [...data].sort((a, b) => {
+  
+  
+    data = [...data].sort((a, b) => {  
+     
       if (a[field] < b[field]) {
         return -1 * direction;
       }
@@ -85,6 +89,8 @@ function getAll(route, query = {}) {
   }
   return data;
 }
+
+
 
 // geeft null terug als het record niet bestaat
 function getById(route, id, embed) {
