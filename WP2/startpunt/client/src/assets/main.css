@@ -1,0 +1,19 @@
+a {
+  text-decoration: none;
+  color: black;
+  transition: 0.4s;
+  padding: 3px;
+}
+
+.router-link-active {
+    background-color: hsla(160, 100%, 37%, 0.2);
+}
+
+nav{
+    padding:10px;
+    border-bottom: 5px solid hsla(160, 100%, 37%, 0.2);
+}
+
+form div{
+    margin:1em;
+}

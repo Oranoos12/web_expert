@@ -41,7 +41,7 @@ function checkRoute(req, res, next) {
 }
 
 app.get('/', (req, res) => {
- const routes = config.routes.map(name => {  //config.routes is list name  van yaml , map maak name voor elke object
+ const routes = config.routes.map(name => { 
     return { name: name, count: service.getAll(name).length };
   });
 
@@ -127,6 +127,7 @@ const server = app.listen(PORT, () => {
 const shutdown = () => {
   console.log('Shutting down...');
     // schrijf de huidige toestand terug naar het yaml-bestand
+    
   try {
     const text = yaml.dump(config);
     fs.writeFileSync(path.join(__dirname, CONFIG), text, 'utf8');

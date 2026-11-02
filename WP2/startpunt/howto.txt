@@ -1,0 +1,32 @@
+Start docker op via het commando
+$ docker compose up
+in docker/
+(of gebruik een alternatieve databank, pas dan DATABASE_CONNECTION 
+in server/.env aan)
+
+localhost:8081 
+user: admin
+password: pass
+
+run 
+$ npm i 
+in server/ en client/ 
+
+Vul de databank op via 
+$ npm run seed
+in server/
+
+Start de server via 
+$ npm run serve
+
+Start de client via 
+$ npm run dev
+in client/
+
+Open http://localhost:8080/ in de browser
+
+username: user
+password: user123
+
+username: admin
+password: admin123

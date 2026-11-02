@@ -1,0 +1,30 @@
+### login als admin (cookie wordt automatisch bewaard)
+POST http://localhost:3000/security/login
+Content-Type: application/json
+
+{"username": "admin", "password": "admin123"}
+
+### (a) alle taken
+GET http://localhost:3000/task/all
+
+### (b) alle gebruikers
+GET http://localhost:3000/user
+
+### (c) taak toekennen aan gebruiker
+# vervang TASK_ID en USER_ID door een uuid uit de 2 requests hierboven
+PATCH http://localhost:3000/task/TASK_ID/user
+Content-Type: application/json
+
+{"userId": "USER_ID"}
+
+### login als gewone user
+POST http://localhost:3000/security/login
+Content-Type: application/json
+
+{"username": "user", "password": "user123"}
+
+### gewone user mag niet alle taken zien (403)
+GET http://localhost:3000/task/all
+
+### eigen taken van de user
+GET http://localhost:3000/task
