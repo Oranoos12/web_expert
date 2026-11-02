@@ -1,0 +1,55 @@
+### 1. user aanmaken (mag zonder token)
+POST http://localhost:3030/users
+Content-Type: application/json
+
+{"email": "jan@test.be", "password": "jan123"}
+
+### 2. inloggen -> token bewaren
+POST http://localhost:3030/authentication
+Content-Type: application/json
+
+{"strategy": "local", "email": "jan@test.be", "password": "jan123"}
+
+> {%
+    client.global.set("token", response.body.accessToken);
+%}
+
+### 3. zonder token -> 401 Not authenticated
+GET http://localhost:3030/films
+
+### 4. film toevoegen (route 1: POST) -> filmId bewaren
+POST http://localhost:3030/films
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"titel": "Inception", "jaar": 2010, "score": 9}
+
+> {%
+    client.global.set("filmId", response.body._id);
+%}
+
+### 5. foute film -> 400 validation failed
+POST http://localhost:3030/films
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"titel": "X", "jaar": 1800, "score": 11}
+
+### 6. al mijn films (route 2: GET)
+GET http://localhost:3030/films
+Authorization: Bearer {{token}}
+
+### 7. een film (route 3: GET met id)
+GET http://localhost:3030/films/{{filmId}}
+Authorization: Bearer {{token}}
+
+### 8. score aanpassen (route 4: PATCH)
+PATCH http://localhost:3030/films/{{filmId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"score": 8}
+
+### 9. film verwijderen (route 5: DELETE)
+DELETE http://localhost:3030/films/{{filmId}}
+Authorization: Bearer {{token}}
