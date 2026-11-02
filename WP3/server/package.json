@@ -1,0 +1,74 @@
+{
+  "name": "server",
+  "description": "WP3 filmlijst",
+  "version": "0.0.0",
+  "homepage": "",
+  "private": true,
+  "keywords": [
+    "feathers"
+  ],
+  "author": {},
+  "contributors": [],
+  "bugs": {},
+  "engines": {
+    "node": ">= 22.23.4"
+  },
+  "feathers": {
+    "language": "js",
+    "packager": "npm",
+    "database": "mongodb",
+    "framework": "express",
+    "transports": [
+      "rest",
+      "websockets"
+    ],
+    "schema": "typebox"
+  },
+  "directories": {
+    "lib": "src",
+    "test": "test"
+  },
+  "files": [
+    "lib/client.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.shared.js"
+  ],
+  "main": "src/client",
+  "type": "module",
+  "scripts": {
+    "start": "node src",
+    "dev": "nodemon src/",
+    "prettier": "npx prettier \"**/*.js\" --write",
+    "mocha": "cross-env NODE_ENV=test mocha test/ --recursive --exit",
+    "test": "npm run mocha",
+    "bundle:client": "npm pack --pack-destination ./public"
+  },
+  "dependencies": {
+    "@feathersjs/adapter-commons": "^5.0.50",
+    "@feathersjs/authentication": "^5.0.51",
+    "@feathersjs/authentication-client": "^5.0.51",
+    "@feathersjs/authentication-local": "^5.0.51",
+    "@feathersjs/authentication-oauth": "^5.0.52",
+    "@feathersjs/configuration": "^5.0.51",
+    "@feathersjs/errors": "^5.0.50",
+    "@feathersjs/express": "^5.0.51",
+    "@feathersjs/feathers": "^5.0.50",
+    "@feathersjs/mongodb": "^5.0.51",
+    "@feathersjs/schema": "^5.0.51",
+    "@feathersjs/socketio": "^5.0.51",
+    "@feathersjs/transport-commons": "^5.0.50",
+    "@feathersjs/typebox": "^5.0.51",
+    "compression": "^1.8.2",
+    "mongodb": "^6.19.0",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@feathersjs/cli": "^5.0.52",
+    "@feathersjs/rest-client": "^5.0.51",
+    "axios": "^1.20.0",
+    "cross-env": "^10.1.0",
+    "mocha": "^12.0.1",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.10"
+  }
+}
